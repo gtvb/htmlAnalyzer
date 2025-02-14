@@ -17,8 +17,12 @@ public class HtmlAnalyzer {
             HtmlTokenizer tokenizer = new HtmlTokenizer(rawLines);
             tokenizer.tokenize();
 
-            System.out.println(tokenizer.getTokens());
-        } catch (HtmlExtractorException e) {
+            HtmlParser parser = new HtmlParser(tokenizer.getTokens());
+            parser.parse();
+
+            // Third step: Finding the deepest text node indside this HTML tree.
+            parser.printDeepestTextNode();
+        } catch (HtmlExtractorException | HtmlParserException e) {
             System.out.println(e.getMessage());
         }
     }

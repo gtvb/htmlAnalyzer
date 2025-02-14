@@ -1,7 +1,5 @@
-public class HtmlExtractorException extends Exception {
-    public HtmlExtractorException() {}
-
-    public HtmlExtractorException(String message) {
-        super(message);
+public class HtmlExtractorException extends RuntimeException {
+    public HtmlExtractorException() {
+        super("URL connection error");
     }
 }

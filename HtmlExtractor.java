@@ -16,8 +16,8 @@ import java.util.ArrayList;
  */
 public class HtmlExtractor {
 
-    private String urlRequestString;
-    private ArrayList<String> rawLines;
+    private final String urlRequestString;
+    private final ArrayList<String> rawLines;
 
     public HtmlExtractor(String requestedUrl) {
         this.urlRequestString = requestedUrl;
@@ -44,7 +44,7 @@ public class HtmlExtractor {
                 rawLines.add(currentLine);
             }
         } catch (IOException e) {
-            throw new HtmlExtractorException("URL connection error");
+            throw new HtmlExtractorException();
         }
     }
 }
