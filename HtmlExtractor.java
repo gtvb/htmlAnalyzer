@@ -7,9 +7,8 @@ import java.util.ArrayList;
 
 /**
  * The class HtmlExtractor is responsible for extracting the HTML content from a
- * given URL. It is essentially a helper for the HtmlAnalyzer class. Any errors
- * that occur during the extraction process are thrown as a
- * HtmlExtractorException, which is a simple wrapper around the Exception class.
+ * given URL. Any errors that occur during the extraction process are thrown as
+ * a HtmlExtractorException, which is a simple wrapper around a RuntimeException
  *
  * @see HtmlExtractorException
  * @see HtmlAnalyzer
@@ -32,6 +31,11 @@ public class HtmlExtractor {
         return new ArrayList<>(rawLines);
     }
 
+    /**
+     * Extracts HTML content from the specified URL and stores each line in the rawLines list.
+     * 
+     * @throws HtmlExtractorException if an I/O error occurs while reading from the URL.
+     */
     public void extractHtml() throws HtmlExtractorException {
         try {
             URL parsedUrl = new URL(urlRequestString);

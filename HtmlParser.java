@@ -6,89 +6,24 @@ import java.util.ArrayList;
  * receives a list of tokens obtained from the HtmlTokenizer class and creates
  * an abstract syntax tree that represents the structure of the HTML content.
  *
- * The grammar is defined as follows (respecting the functional requirement of
- * the project:
+ * The grammar can be defined as follows (respecting the functional requirements
+ * of the project):
  *
- * <html> -> <tag>
- * <tag> -> <openingTag> <content> <closingTag>
- * <openingTag> -> "<" STRING ">" = OPEN_TAG_TOKEN
- * <closingTag> -> "</" STRING ">" = CLOSE_TAG_TOKEN
- * <content> -> <text> <content> | <tag> <content> | ε
- * <text> -> STRING
+ * <pre>
+ * {@code
+ * <html> ::= <tag>
+ * <tag> ::= <openingTag> <content> <closingTag>
+ * <openingTag> ::= "<" STRING ">"
+ * <closingTag> ::= "</" STRING ">"
+ * <content> ::= <text> <content> | <tag> <content>
+ * <text> ::= STRING
+ * }
+ * </pre>
  *
  * @see HtmlTokenizer
  * @see HtmlParserException
  */
 public class HtmlParser {
-
-    sealed interface HtmlData permits HtmlTagNode, HtmlTextContentNode {
-    }
-
-    public final class HtmlTagNode implements HtmlData {
-
-        private final HtmlToken openTag;
-        private final HtmlToken closeTag;
-
-        public HtmlTagNode(HtmlToken openTag, HtmlToken closeTag) {
-            this.openTag = openTag;
-            this.closeTag = closeTag;
-        }
-
-        @Override
-        public String toString() {
-            return openTag.getLiteralValue() + ", " + closeTag.getLiteralValue();
-        }
-    }
-
-    public final class HtmlTextContentNode implements HtmlData {
-
-        private final HtmlToken textContent;
-
-        public HtmlTextContentNode(HtmlToken textContent) {
-            this.textContent = textContent;
-        }
-
-        @Override
-        public String toString() {
-            return textContent.getLiteralValue();
-        }
-    }
-
-    public class HtmlNode {
-
-        private HtmlNode parent = null;
-        private final HtmlData data;
-        private ArrayList<HtmlNode> children;
-
-        public HtmlNode(HtmlData data) {
-            this.data = data;
-        }
-
-        public HtmlNode getParent() {
-            return parent;
-        }
-
-        public HtmlData getData() {
-            return data;
-        }
-
-        public ArrayList<HtmlNode> getChildren() {
-            return children;
-        }
-
-        public void setChildren(ArrayList<HtmlNode> parsedChildren) {
-            children = parsedChildren;
-        }
-
-        public void setParent(HtmlNode p) {
-            parent = p;
-        }
-
-        @Override
-        public String toString() {
-            return data.toString();
-        }
-    }
 
     private int currentIndex;
     private final ArrayList<HtmlToken> tokens;
@@ -104,12 +39,25 @@ public class HtmlParser {
     // Some rules don't need a function, but the core of the grammar (which allows us)
     // to give meaning to the HTML tokens, is present in one of these functions. Essentially,
     // we are implementing a Recursive Descent Parser, which starts from the so-called
-    // "non-terminal" 
+    // "non-terminal" rules, and walks its way down to the "terminal" rules. In the case 
+    // of an error in the parsing process, a HtmlParserException is thrown.
 
+    /**
+     * This function is used to get the abstract syntax tree of the HTML content.
+     *
+     * @return The abstract syntax tree of the HTML content.
+     */
     public HtmlNode getAbstractSyntaxTree() {
         return abstractSyntaxTree;
     }
 
+    /**
+     * This function is responsible for parsing the HTML content. It starts by
+     * calling the `html` rule and sets the abstract syntax tree to the result of
+     * the parsing process.
+     *
+     * @throws HtmlParserException If an error occurs during the parsing process.
+     */
     public void parse() throws HtmlParserException {
         abstractSyntaxTree = html();
     }
@@ -123,15 +71,19 @@ public class HtmlParser {
             throw new HtmlParserException();
         }
 
+        // Following the tag rule, we should process the nodes in the following order:
+        // 1. OpenTag
         HtmlToken openTag = tokens.get(currentIndex);
         currentIndex++;
 
+        // 2. Content
         ArrayList<HtmlNode> inner = content();
 
         if (currentIndex >= tokens.size() || tokens.get(currentIndex).getTokenType() != HtmlTokenType.CloseTag) {
             throw new HtmlParserException();
         }
 
+        // 3. CloseTag
         HtmlToken closeTag = tokens.get(currentIndex);
         currentIndex++;
 
@@ -153,6 +105,17 @@ public class HtmlParser {
         return children;
     }
 
+    /**
+     * This function is responsible for parsing the content of a tag. It is a
+     * recursive function that keeps parsing the content, and takes the decision
+     * on what to do next based on the next token in the list. If the next token
+     * is a text content, we create a new HtmlTextContentNode and add it to the
+     * list of children. If the next token is an OpenTag, we call the `tag`
+     * function to parse the tag and add it to the list of children. If the next
+     * token is a CloseTag, we return from the function.
+     *
+     * @param children The list of children nodes of the current tag.
+     */
     private void parseContent(ArrayList<HtmlNode> children) {
         if (currentIndex >= tokens.size()) {
             return;
@@ -175,6 +138,16 @@ public class HtmlParser {
         }
     }
 
+    /**
+     * This function is responsible for printing the deepest text content node
+     * in the abstract syntax tree. It uses a DepthNodeWrapper to keep track of
+     * the deepest node found so far, and a recursive function to traverse the
+     * tree and find the deepest node. This function is responsible for solving
+     * the main functional requirement of the project.
+     *
+     * @see DepthNodeWrapper
+     * @see HtmlNode
+     */
     public void printDeepestTextNode() {
         DepthNodeWrapper wrapper = new DepthNodeWrapper();
         findDeepestTextContentNode(abstractSyntaxTree, 1, wrapper);
@@ -182,7 +155,7 @@ public class HtmlParser {
         if (wrapper.deepestNode != null) {
             System.out.println(wrapper.deepestNode.getData().toString());
         }
-    } 
+    }
 
     private void findDeepestTextContentNode(HtmlNode node, int depth, DepthNodeWrapper wrapper) {
         if (node.getData() instanceof HtmlTextContentNode && depth > wrapper.maxDepth) {
@@ -200,6 +173,7 @@ public class HtmlParser {
     }
 
     private static class DepthNodeWrapper {
+
         private int maxDepth = -1;
         private HtmlNode deepestNode = null;
     }
@@ -215,9 +189,9 @@ public class HtmlParser {
         }
 
         if (node.getData() instanceof HtmlTextContentNode) {
-            System.out.println("Text: \"" + node.data.toString() + "\"");
+            System.out.println("Text: \"" + node.getData().toString() + "\"");
         } else {
-            System.out.println("Node(tag=" + node.data.toString() + ")");
+            System.out.println("Node(tag=" + node.getData().toString() + ")");
             for (HtmlNode child : node.getChildren()) {
                 printTree(child, indent + 1);
             }

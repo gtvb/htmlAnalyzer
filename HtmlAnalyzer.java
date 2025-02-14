@@ -7,7 +7,7 @@ public class HtmlAnalyzer {
         String requestedUrlString = args[0];
 
         try {
-            // First step: Extracting the data
+            // First step: Extracting the data from the desired URL.
             HtmlExtractor extractor = new HtmlExtractor(requestedUrlString);
             extractor.extractHtml();
 
@@ -19,6 +19,8 @@ public class HtmlAnalyzer {
 
             HtmlParser parser = new HtmlParser(tokenizer.getTokens());
             parser.parse();
+
+            parser.printHtmlTree();
 
             // Third step: Finding the deepest text node indside this HTML tree.
             parser.printDeepestTextNode();
