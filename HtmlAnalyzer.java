@@ -20,8 +20,6 @@ public class HtmlAnalyzer {
             HtmlParser parser = new HtmlParser(tokenizer.getTokens());
             parser.parse();
 
-            parser.printHtmlTree();
-
             // Third step: Finding the deepest text node indside this HTML tree.
             parser.printDeepestTextNode();
         } catch (HtmlExtractorException | HtmlParserException e) {
