@@ -8,6 +8,8 @@ text node inside an HTML structure. It follows all the functional requirements o
 the project description, and provides an organized file structure to deal with 
 the problem.
 
+![How does it work?](/assets/htmlAnalyzer.png)
+
 ### Code structure
 
 #### URL Extraction
