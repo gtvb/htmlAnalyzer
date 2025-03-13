@@ -38,6 +38,7 @@ public class HtmlExtractor {
      */
     public void extractHtml() throws HtmlExtractorException {
         try {
+            @SuppressWarnings("deprecation")
             URL parsedUrl = new URL(urlRequestString);
 
             BufferedReader reader = new BufferedReader(

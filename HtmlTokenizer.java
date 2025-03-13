@@ -35,7 +35,7 @@ public class HtmlTokenizer {
      * is a '/', a CloseTag token is created. otherwise, creates a TextContent
      * token. Adds tokens to the tokens list.
      */
-    public void tokenize() {
+    public void tokenize() throws HtmlTokenizerException {
         for (String line : lines) {
             String trimmedLine = line.trim();
             if (trimmedLine.isEmpty()) {
@@ -63,20 +63,30 @@ public class HtmlTokenizer {
      *
      * @param line the HTML line to tokenize
      * @return a new HtmlToken representing the tag
-     */ 
-    private HtmlToken addTagToken(String line) {
+     */
+    private HtmlToken addTagToken(String line) throws HtmlTokenizerException {
         HtmlToken newToken = new HtmlToken();
 
-        if (line.charAt(1) == '/') {
-            newToken.setTokenType(HtmlTokenType.CloseTag);
-            newToken.setLiteralValue(extractLiteralValue(line, 2, '>'));
+        try {
+            // Start at the second character to skip the '<', which was already checked
+            int currentIndex = 1;
+            char currentChar = line.charAt(currentIndex);
+            if (currentChar == '/') {
+                currentIndex++;
+                currentChar = line.charAt(currentIndex);
+
+                newToken.setTokenType(HtmlTokenType.CloseTag);
+                newToken.setLiteralValue(extractLiteralValue(line, currentIndex));
+                return newToken;
+            }
+
+            newToken.setTokenType(HtmlTokenType.OpenTag);
+            newToken.setLiteralValue(extractLiteralValue(line, currentIndex));
+
             return newToken;
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new HtmlTokenizerException();
         }
-
-        newToken.setTokenType(HtmlTokenType.OpenTag);
-        newToken.setLiteralValue(extractLiteralValue(line, 1, '>'));
-
-        return newToken;
     }
 
     /**
@@ -90,27 +100,31 @@ public class HtmlTokenizer {
         HtmlToken newToken = new HtmlToken();
 
         newToken.setTokenType(HtmlTokenType.TextContent);
-        newToken.setLiteralValue(extractLiteralValue(line, 0, '\n'));
+        newToken.setLiteralValue(line);
 
         return newToken;
     }
 
     /**
      * Extracts the literal value from the provided line starting from the given
-     * index and stopping at the provided stopping character.
+     * index and stopping at the default stopping character.
      *
      * @param line         the line to extract the literal value from
      * @param startIndex   the index to start extracting from
-     * @param stoppingChar the character to stop extracting at
      * @return the extracted literal value
      */
-    private String extractLiteralValue(String line, int startIndex, char stoppingChar) {
+    private String extractLiteralValue(String line, int startIndex) throws HtmlTokenizerException {
+        final char defaultStoppingChar = '>';
         StringBuilder literalValue = new StringBuilder();
 
         int currentIndex = startIndex;
-        while (currentIndex < line.length() && line.charAt(currentIndex) != stoppingChar) {
+        while (currentIndex < line.length()) {
             literalValue.append(line.charAt(currentIndex));
             currentIndex++;
+        }
+
+        if (line.charAt(currentIndex - 1) != defaultStoppingChar) {
+            throw new HtmlTokenizerException();
         }
 
         return literalValue.toString();

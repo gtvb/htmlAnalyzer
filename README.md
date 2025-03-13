@@ -37,3 +37,10 @@ necessary `.class` files. After that, run:
 ```
 java HtmlAnalyzer.java desired-url
 ```
+
+10 minutos:
+
+30 segundos: Apresentação pessoal e enuciação do objetivo proposto!
+1:30: Descrever funcionamento da parte 1
+4:30: Descrever funcionamento da parte 2
+3:30: Descrever funcionamento da parte 3 e apresentar possíveis melhorias

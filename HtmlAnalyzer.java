@@ -22,7 +22,7 @@ public class HtmlAnalyzer {
 
             // Third step: Finding the deepest text node indside this HTML tree.
             parser.printDeepestTextNode();
-        } catch (HtmlExtractorException | HtmlParserException e) {
+        } catch (HtmlExtractorException | HtmlTokenizerException | HtmlParserException e) {
             System.out.println(e.getMessage());
         }
     }
